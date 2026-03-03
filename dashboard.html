@@ -1,0 +1,1113 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Arena Protocol</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Teko:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --brand-blue: #007aff;
+            --brand-gold: #ffd700;
+            --brand-gold-glow: rgba(255, 215, 0, 0.4);
+            --bg-dark: #050510;
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --border-light: rgba(255, 255, 255, 0.15);
+            --font-head: 'Teko', sans-serif;
+            --font-body: 'Rajdhani', sans-serif;
+            --accent: var(--brand-blue);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: #fff;
+            font-family: var(--font-body);
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Futuristic Background */
+        .bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1a1a3a 0%, #050510 100%);
+        }
+
+        .bg-grid {
+            position: absolute;
+            inset: -100%;
+            background-image:
+                linear-gradient(rgba(0, 122, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 122, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(1000px) rotateX(60deg) translateY(-100px);
+            animation: gridMove 30s linear infinite;
+            mask-image: radial-gradient(circle at center, black, transparent 70%);
+        }
+
+        @keyframes gridMove {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 0 100%;
+            }
+        }
+
+        .campaign-notification {
+            background: linear-gradient(135deg, rgba(20, 30, 60, 0.8) 0%, rgba(10, 10, 20, 0.95) 100%);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-left: 4px solid var(--brand-gold);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .campaign-notification:hover {
+            transform: scale(1.02);
+            border-color: rgba(255, 215, 0, 0.5);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        .campaign-title {
+            color: var(--brand-gold);
+            font-family: var(--font-head);
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .campaign-details {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Top Bar */
+        .top-nav {
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-light);
+            z-index: 1000;
+        }
+
+        .brand-logo {
+            font-family: var(--font-head);
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .brand-logo span {
+            color: var(--brand-gold);
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 5px 5px 5px 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-light);
+            border-radius: 50px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .user-pill:hover {
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 20px rgba(0, 122, 255, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        #userNameDisplay {
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.1rem;
+        }
+
+        .logout-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(255, 50, 50, 0.3);
+            border: 1px solid rgba(255, 50, 50, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #ff8080;
+            transition: all 0.3s;
+        }
+
+        .logout-circle:hover {
+            background: #ff3333;
+            color: #fff;
+            transform: scale(1.15);
+            box-shadow: 0 0 15px rgba(255, 50, 50, 0.4);
+        }
+
+        /* Main Content */
+        .viewport {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero-title {
+            font-family: var(--font-head);
+            font-size: clamp(2rem, 5vw, 4rem);
+            margin: 0;
+            line-height: 1;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideIn 0.8s ease-out forwards;
+            background: linear-gradient(to bottom, #fff, #888);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Enhanced Card System */
+        .arena-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .protocol-card {
+            position: relative;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            padding: 35px 25px;
+            text-decoration: none;
+            color: inherit;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(20px);
+            text-align: center;
+        }
+
+        .protocol-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(var(--accent-rgb), 0.2);
+        }
+
+        .card-visual {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: var(--accent);
+            line-height: 1;
+            filter: drop-shadow(0 0 15px var(--accent-glow));
+        }
+
+        .protocol-card:hover .card-visual {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .card-label {
+            font-family: var(--font-head);
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #fff;
+        }
+
+        .card-summary {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.95rem;
+            line-height: 1.4;
+            margin-bottom: 25px;
+            max-width: 90%;
+        }
+
+        .card-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 35px;
+            width: 100%;
+            text-align: left;
+        }
+
+        .feature-item {
+            font-size: 0.9rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item i {
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .card-action {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-light);
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-family: var(--font-head);
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+        }
+
+        .protocol-card:hover .card-action {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+            box-shadow: 0 0 30px var(--accent);
+            transform: scale(1.05);
+        }
+
+        .ipl-mode {
+            --accent: #ff6b35;
+            --accent-rgb: 255, 107, 53;
+            --accent-glow: rgba(255, 107, 53, 0.3);
+        }
+
+        .blind-mode {
+            --accent: #ffd700;
+            --accent-rgb: 255, 215, 0;
+            --accent-glow: rgba(255, 215, 0, 0.3);
+        }
+
+        /* Corner Terminal Details */
+        .system-marker {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 100;
+        }
+
+        .status-point {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff66;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ff66;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .card-features {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .top-nav {
+                padding: 10px 20px;
+            }
+
+            .viewport {
+                padding: 20px 15px;
+            }
+
+            .system-marker {
+                display: none;
+            }
+        }
+
+        .scan-line {
+            width: 150px;
+            height: 1px;
+            background: linear-gradient(to right, var(--brand-blue), transparent);
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan {
+            0% {
+                transform: scaleX(0);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scaleX(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scaleX(0);
+                opacity: 0;
+            }
+        }
+
+        /* Secret Stats Terminal */
+        #secretTerminal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 3, 10, 0.98);
+            z-index: 1000;
+            padding: 60px;
+            display: none;
+            flex-direction: column;
+            font-family: 'Courier New', Courier, monospace;
+            color: #00ff66;
+            text-shadow: 0 0 5px #00ff66;
+            overflow-y: auto;
+        }
+
+        #secretTerminal.active {
+            display: flex;
+        }
+
+        .terminal-header {
+            border-bottom: 1px solid #00ff66;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-line {
+            margin-bottom: 8px;
+            opacity: 0;
+        }
+
+        .typing {
+            animation: terminalType 0.1s steps(40) forwards;
+        }
+
+        @keyframes terminalType {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .terminal-close {
+            background: transparent;
+            border: 1px solid #00ff66;
+            color: #00ff66;
+            padding: 12px 24px;
+            cursor: pointer;
+            margin-top: 40px;
+            align-self: flex-start;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .terminal-close:hover {
+            background: #00ff66;
+            color: #000;
+        }
+
+        @media (max-width: 900px) {
+            .arena-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .hero-title {
+                font-size: 3.5rem;
+            }
+
+            .top-nav {
+                padding: 15px 20px;
+            }
+
+            body {
+                overflow-y: auto;
+            }
+        }
+
+        /* Resume Game Modal */
+        .resume-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .resume-modal {
+            background: rgba(20, 20, 40, 0.95);
+            border: 1px solid var(--brand-gold);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.2);
+            transform: scale(0.9);
+            animation: scaleIn 0.3s ease-out forwards;
+        }
+
+        @keyframes scaleIn {
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .resume-header {
+            font-family: var(--font-head);
+            font-size: 2.5rem;
+            color: var(--brand-gold);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .resume-details {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .resume-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn-resume,
+        .btn-dismiss {
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-family: var(--font-head);
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-resume {
+            background: var(--brand-gold);
+            color: #000;
+            font-weight: 700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-resume:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .btn-dismiss {
+            background: transparent;
+            border: 1px solid rgba(255, 50, 50, 0.5);
+            color: #ff5050;
+        }
+
+        .btn-dismiss:hover {
+            background: rgba(255, 50, 50, 0.1);
+            border-color: #ff5050;
+        }
+
+        /* Enhanced Active Campaigns Section */
+        .campaign-section {
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 40px;
+            display: none;
+            perspective: 1000px;
+        }
+
+        .campaign-notification {
+            background: linear-gradient(145deg, rgba(20, 20, 35, 0.9), rgba(10, 10, 20, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-left: 4px solid var(--brand-gold);
+            border-radius: 16px;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.5s ease-out backwards;
+        }
+
+        /* Staggered animation handled by CSS nth-child if possible, or just default slideIn */
+
+        .campaign-notification::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.03), transparent);
+            transform: translateX(-100%);
+            transition: 0.6s;
+        }
+
+        .campaign-notification:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.1);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .campaign-notification:hover::before {
+            transform: translateX(100%);
+        }
+
+        .campaign-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 1;
+        }
+
+        .campaign-title-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .game-icon {
+            font-size: 1.8rem;
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.4));
+        }
+
+        .room-id {
+            font-family: var(--font-head);
+            font-size: 2.2rem;
+            color: #fff;
+            letter-spacing: 3px;
+            line-height: 1;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .status-badge {
+            font-family: var(--font-body);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-badge.status-auction {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: rgba(255, 215, 0, 0.3);
+            color: var(--brand-gold);
+        }
+
+        .campaign-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .team-name {
+            color: #fff;
+            font-weight: 600;
+            font-family: var(--font-body);
+        }
+
+        .separator {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .campaign-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            z-index: 1;
+        }
+
+        .btn-camp-resume {
+            background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+            color: #000;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-family: var(--font-head);
+            font-size: 1.3rem;
+            cursor: pointer;
+            font-weight: 800;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(255, 170, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-camp-resume:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 170, 0, 0.5);
+            filter: brightness(1.1);
+        }
+
+        .btn-camp-dismiss {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1rem;
+        }
+
+        .btn-camp-dismiss:hover {
+            background: rgba(255, 50, 50, 0.1);
+            border-color: #ff5050;
+            color: #ff5050;
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-canvas">
+        <div class="bg-grid"></div>
+    </div>
+
+    <nav class="top-nav">
+        <a href="dashboard.html" class="brand-logo">IPL<span>2026</span></a>
+        <div class="user-hub">
+            <div class="user-pill">
+                <a href="profile.html" id="userNameDisplay" style="display: flex; align-items: center; gap: 8px;">
+                    <span style="opacity: 0.5; font-size: 0.8em; letter-spacing: 1px;">OPERATOR //</span>
+                    <span id="actualName">NULL</span>
+                </a>
+                <div id="logoutBtn" class="logout-circle" title="Exit Protocol">
+                    <i class="bi bi-power"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="viewport container">
+        <div class="hero-header">
+            <h1 class="hero-title" id="triggerTitle">Select Your Auction Game</h1>
+        </div>
+
+        <div id="activeCampaignsContainer" class="campaign-section"
+            style="max-width: 1200px; width: 100%; display: none;">
+            <!-- JS will populate this -->
+        </div>
+
+        <div id="completedCampaignsContainer" class="campaign-section"
+            style="max-width: 1200px; width: 100%; display: none;">
+            <!-- JS will populate this -->
+        </div>
+
+        <div class="arena-grid">
+            <!-- ✨ RESUME CARD (Hidden by default) -->
+
+
+            <a href="ipl.html" class="protocol-card ipl-mode">
+                <div class="card-visual">🏏</div>
+                <div class="card-label">IPL AUCTION <span style="font-size: 0.7em;">⚔️</span></div>
+                <div class="card-summary">Live synchronized bidding engine. Battle other franchise owners in real-time
+                    to build the ultimate squad.</div>
+                <div class="card-features">
+                    <div class="feature-item"><i class="bi bi-people-fill"></i> 215+ Active Players</div>
+                    <div class="feature-item"><i class="bi bi-wallet2"></i> ₹100Cr Starting Budget</div>
+                    <div class="feature-item"><i class="bi bi-mic-fill"></i> Voice Chat Integration</div>
+                    <div class="feature-item"><i class="bi bi-graph-up-arrow"></i> Advanced Season Sim</div>
+                    <div class="feature-item"><i class="bi bi-lightning-fill"></i> Real-time Sync Engine</div>
+                    <div class="feature-item"><i class="bi bi-trophy-fill"></i> Dynamic Leaderboard</div>
+                </div>
+                <div class="card-action">Initialize Auction</div>
+            </a>
+
+            <a href="blind-auction.html" class="protocol-card blind-mode">
+                <div class="card-visual">🕶️</div>
+                <div class="card-label">BLIND AUCTION <span style="font-size: 0.7em;">🔒</span></div>
+                <div class="card-summary">The ultimate test of valuation. Sealed bids mean you only get one shot. Master
+                    the art of the ghost proxy.</div>
+                <div class="card-features">
+                    <div class="feature-item"><i class="bi bi-incognito"></i> Anonymous Bidding</div>
+                    <div class="feature-item"><i class="bi bi-shield-lock-fill"></i> Single-Shot Protocol</div>
+                    <div class="feature-item"><i class="bi bi-person-bounding-box"></i> Private Lot Access</div>
+                    <div class="feature-item"><i class="bi bi-chat-dots-fill"></i> Intent Analysis Chat</div>
+                    <div class="feature-item"><i class="bi bi-robot"></i> Ghost Proxy AI</div>
+                    <div class="feature-item"><i class="bi bi-safe2-fill"></i> Secure Trade Center</div>
+                </div>
+                <div class="card-action">Execute Protocol</div>
+            </a>
+        </div>
+    </main>
+
+    <div class="system-marker">
+        <div class="status-point">
+            <span class="pulse-dot"></span>
+            <span>SYSTEM_ONLINE // STABLE</span>
+        </div>
+        <div style="opacity: 0.7; font-size: 0.75rem;">RECORDS_PROCESSED: 215_PLR</div>
+        <div style="opacity: 0.7; font-size: 0.75rem;">UPTIME: 99.99%</div>
+    </div>
+
+    <!-- Hidden Stats Terminal -->
+    <div id="secretTerminal">
+        <div class="terminal-header">
+            <span>&gt; ARENA_OS_DECRYPTED [v5.0]</span>
+            <span id="terminalClock">00:00:00</span>
+        </div>
+        <div id="terminalBody"></div>
+        <button class="terminal-close" onclick="closeTerminal()">TERMINATE_SESSION</button>
+    </div>
+
+    <!-- Resume Game Modal -->
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        let activeGameData = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set user name
+            const user = JSON.parse(localStorage.getItem('user')) || { name: 'GUEST' };
+            const actualName = document.getElementById('actualName');
+            if (actualName) actualName.textContent = user.name.toUpperCase();
+
+
+
+            // Mouse follow effect on cards
+            const cards = document.querySelectorAll('.protocol-card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = ((e.clientX - rect.left) / rect.width) * 100;
+                    const y = ((e.clientY - rect.top) / rect.height) * 100;
+                    card.style.setProperty('--x', `${x}%`);
+                    card.style.setProperty('--y', `${y}%`);
+                });
+            });
+
+            // Hidden terminal trigger (5 clicks on title or ~ key)
+            let clicks = 0;
+            const trigger = document.getElementById('triggerTitle');
+            trigger.addEventListener('click', () => {
+                clicks++;
+                if (clicks >= 5) {
+                    openTerminal();
+                    clicks = 0;
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === '~' || e.key === '`') {
+                    openTerminal();
+                }
+            });
+        });
+
+
+
+
+        function openTerminal() {
+            const term = document.getElementById('secretTerminal');
+            const body = document.getElementById('terminalBody');
+            term.classList.add('active');
+            body.innerHTML = '';
+
+            const lines = [
+                "&gt; INITIALIZING ENCRYPTED UPLINK...",
+                "&gt; AUTHENTICATING OPERATOR: " + (JSON.parse(localStorage.getItem('user'))?.name || 'UNKNOWN'),
+                "&gt; CONNECTION_PORT: 3005",
+                "&gt; MONGODB_REPLICA_SET: UP",
+                "&gt; ACTIVE_CLIENTS: " + (Math.floor(Math.random() * 100) + 1),
+                "&gt; DATABASE_LATENCY: 12ms",
+                "&gt; TOTAL_LOTS: 540",
+                "&gt; CURRENT_ARENA: LOCALHOST",
+                "&gt; SYSTEM_INTEGRITY: 99.98%",
+                "&gt; ---------------------------",
+                "&gt; WAR_CHEST_ESTIMATE: ₹450,000,000",
+                "&gt; SUCCESS_PROBABILITY: HIGH",
+                "&gt; GLHF_COMMANDER."
+            ];
+
+            let i = 0;
+            function addLine() {
+                if (i < lines.length) {
+                    const div = document.createElement('div');
+                    div.className = 'terminal-line typing';
+                    div.innerHTML = lines[i];
+                    body.appendChild(div);
+                    i++;
+                    setTimeout(addLine, 150);
+                }
+            }
+            addLine();
+
+            // Update clock
+            setInterval(() => {
+                document.getElementById('terminalClock').textContent = new Date().toLocaleTimeString();
+            }, 1000);
+        }
+
+        function closeTerminal() {
+            document.getElementById('secretTerminal').classList.remove('active');
+        }
+
+
+        // Initialize Socket for Dashboard
+        const socket = io({
+            transports: ["websocket"],
+            auth: {
+                playerId: localStorage.getItem("ipl_auction_player_id"),
+            },
+        });
+
+        socket.on("connect", () => {
+            console.log("Connected to dashboard socket.");
+            fetchActiveGames();
+        });
+
+        function fetchActiveGames() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (user) {
+                const userData = {
+                    email: user.email,
+                    id: user.id || localStorage.getItem("ipl_auction_player_id")
+                };
+                socket.emit("get_my_active_games", userData);
+                socket.emit("get_my_completed_games", userData);
+            }
+        }
+
+        socket.on("active_games_list", (games) => {
+            const container = document.getElementById("activeCampaignsContainer");
+            if (!container) return;
+
+            if (games.length > 0) {
+                container.style.display = "block";
+                // Add header if not present
+                container.innerHTML = `<h3 style="width:100%; color:#fff; font-family:var(--font-head); margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">ACTIVE SESSIONS FOUND (${games.length})</h3>`;
+
+                games.forEach((g, index) => {
+                    const div = document.createElement("div");
+                    div.className = "campaign-notification";
+                    div.style.animationDelay = `${index * 0.1}s`;
+
+                    const icon = g.gameType === 'blind' ? '🕶️' : '🏏';
+                    const link = g.gameType === 'blind' ? 'blind-auction.html' : 'ipl.html';
+
+                    div.innerHTML = `
+                        <div class="campaign-info">
+                            <div class="campaign-title-row">
+                                <span class="game-icon">${icon}</span> 
+                                <span class="room-id">ROOM: ${g.roomId}</span>
+                                <span class="status-badge status-auction"><i class="bi bi-circle-fill" style="font-size:0.5em;"></i> ${g.state || 'ACTIVE'}</span>
+                            </div>
+                            <div class="campaign-meta">
+                                <span>TEAM: <span class="team-name">${g.teamName}</span></span>
+                                <span class="separator">|</span> 
+                                <span>LAST ACTIVE: <span style="color:#aaa;">${g.lastActive ? new Date(g.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}</span></span>
+                            </div>
+                        </div>
+                        <div class="campaign-actions">
+                            <button class="btn-camp-resume" onclick="window.location.href='${link}?roomId=${g.roomId}&action=resume'">
+                                CONTINUE <i class="bi bi-arrow-right-short"></i>
+                            </button>
+                            <button class="btn-camp-dismiss" onclick="dismissGame('${g.roomId}')" title="Dismiss Session">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            } else {
+                container.style.display = "none";
+                container.innerHTML = "";
+            }
+        });
+
+        socket.on("completed_games_list", (games) => {
+            const container = document.getElementById("completedCampaignsContainer");
+            if (!container) return;
+
+            if (games.length > 0) {
+                container.style.display = "block";
+                container.innerHTML = `<h3 style="width:100%; color:#aaa; font-family:var(--font-head); margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:10px; font-size: 1.2rem; letter-spacing:1px;">RECENTLY COMPLETED AUCTIONS</h3>`;
+
+                games.forEach((g, index) => {
+                    const div = document.createElement("div");
+                    div.className = "campaign-notification";
+                    div.style.opacity = "0.7";
+                    div.style.borderLeftColor = "rgba(255,255,255,0.1)";
+
+                    const icon = g.gameType === 'blind' ? '🕶️' : '🏏';
+
+                    div.innerHTML = `
+                        <div class="campaign-info">
+                            <div class="campaign-title-row">
+                                <span class="game-icon" style="opacity:0.5;">${icon}</span> 
+                                <span class="room-id" style="font-size:1.5rem; opacity:0.8;">ROOM: ${g.roomId}</span>
+                                <span class="status-badge"><i class="bi bi-check-circle-fill" style="font-size:0.5em;"></i> FINISHED</span>
+                            </div>
+                            <div class="campaign-meta">
+                                <span>TEAM: <span class="team-name">${g.teamName}</span></span>
+                                <span class="separator">|</span> 
+                                <span>ENDED: <span style="color:#888;">${new Date(g.finishedAt).toLocaleDateString()}</span></span>
+                            </div>
+                        </div>
+                        <div class="campaign-actions">
+                            <button class="btn-camp-resume" style="background: rgba(255,255,255,0.1); color: #fff; box-shadow: none;" onclick="window.location.href='profile.html?roomId=${g.roomId}'">
+                                VIEW RESULTS <i class="bi bi-trophy-fill ms-1"></i>
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            } else {
+                container.style.display = "none";
+            }
+        });
+
+        window.dismissGame = function (roomId) {
+            if (confirm("Are you sure you want to dismiss this game? You will leave the team.")) {
+                const user = JSON.parse(localStorage.getItem('user'));
+                socket.emit("dismiss_active_game", {
+                    roomId: roomId,
+                    email: user.email,
+                    playerId: localStorage.getItem("ipl_auction_player_id")
+                });
+            }
+        };
+
+
+        socket.on("game_dismissed_success", (rid) => {
+            fetchActiveGames();
+        });
+
+        // Logout functionality handled by auth.js
+    </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,959 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | IPL Auction</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Teko:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="profile.css">
+</head>
+
+<body>
+    <div class="profile-container">
+        <!-- Header -->
+        <div class="profile-header">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div class="user-details">
+                    <h1 id="userName">User Name</h1>
+                    <p id="userDetailsText">Joined: Jan 2026 â€¢ <span id="userEmail">email@example.com</span></p>
+                    <button id="backToMyProfileBtn" class="btn btn-sm btn-outline-warning mt-2"
+                        onclick="loadMyProfile()" style="display: none;">
+                        <i class="bi bi-arrow-left"></i> Back to My Profile
+                    </button>
+                </div>
+            </div>
+
+            <!-- SEARCH -->
+            <div class="search-container ms-auto mx-4 position-relative" style="min-width: 300px;">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-secondary text-muted"><i
+                            class="bi bi-search"></i></span>
+                    <input type="text" id="userSearchInput" class="form-control bg-dark text-white border-secondary"
+                        placeholder="Search users by name/email..." onkeyup="handleSearchKey(event)">
+                    <button class="btn btn-outline-warning" onclick="searchUsers()">Search</button>
+                </div>
+                <div id="searchResults"
+                    class="position-absolute w-100 bg-dark border border-secondary rounded mt-1 shadow-lg"
+                    style="display:none; z-index: 1000; max-height: 300px; overflow-y: auto;"></div>
+            </div>
+            <div class="action-buttons">
+                <a href="dashboard.html" class="btn-custom">
+                    <i class="bi bi-grid-fill"></i> Dashboard
+                </a>
+                <button class="btn-custom btn-logout" onclick="logout()">
+                    <i class="bi bi-power"></i> Logout
+                </button>
+            </div>
+        </div>
+
+        <div id="loadingSection" class="loading">
+            <div class="spinner-border text-warning" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div style="margin-top: 15px; font-size: 1.2rem; color: var(--text-muted);">Accessing Player Database...
+            </div>
+        </div>
+
+        <div id="profileContent" style="display: none;">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="matchesPlayed">0</div>
+                    <div class="stat-label">Matches Played</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="matchesWon">0</div>
+                    <div class="stat-label">Matches Won</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="auctionsCount">0</div>
+                    <div class="stat-label">Auctions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="winRate">0%</div>
+                    <div class="stat-label">Win Rate</div>
+                </div>
+            </div>
+
+            <!-- Teams Portfolio -->
+            <div class="teams-section">
+                <div class="section-title">
+                    <i class="bi bi-shield-shaded"></i> Franchise Network
+                </div>
+                <div class="teams-carousel" id="globalTeamsContainer">
+                    <!-- Teams will be injected here -->
+                </div>
+            </div>
+
+            <!-- History -->
+            <div class="history-section">
+                <div class="section-title">
+                    <i class="bi bi-trophy-fill"></i> Tournament Chronicle
+                </div>
+                <div id="historyContainer">
+                    <!-- History Lists will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Match Details Modal -->
+    <div id="matchDetailsModal" class="modal-overlay">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2 id="matchDetailsTitle">Tournament Details</h2>
+                <button class="close-modal" onclick="closeMatchModal()">Ã—</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalLoading" style="text-align: center; padding: 40px; display: none;">
+                    <div class="spinner-border text-warning" role="status"></div>
+                </div>
+
+                <div id="modalContentArea">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('standings')">Standings</button>
+                        <button class="tab-btn" onclick="switchTab('matches')">Matches</button>
+                        <button class="tab-btn" onclick="switchTab('stats')">Stats</button>
+                        <button class="tab-btn" onclick="switchTab('squads')">Squads</button>
+                    </div>
+
+                    <div id="tab-standings" class="tab-content active">
+                        <table class="standings-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">Rank</th>
+                                    <th>Team / Owner</th>
+                                    <th>P</th>
+                                    <th>W</th>
+                                    <th>L</th>
+                                    <th>Pts</th>
+                                    <th>NRR</th>
+                                </tr>
+                            </thead>
+                            <tbody id="standingsTableBody">
+                                <!-- Standings Rows -->
+                            </tbody>
+                        </table>
+                        <div id="noStandingsMsg"
+                            style="text-align: center; padding: 20px; color: var(--text-muted); display: none;">
+                            Detailed standings not available for this legacy match.
+                        </div>
+                    </div>
+
+                    <div id="tab-matches" class="tab-content">
+                        <div id="matchesList"></div>
+                    </div>
+
+                    <div id="tab-stats" class="tab-content">
+                        <div class="stats-showcase" id="statsContent"></div>
+                    </div>
+
+                    <div id="tab-squads" class="tab-content">
+                        <div class="team-selector" id="teamSelector">
+                            <!-- Team Pills -->
+                        </div>
+                        <div class="squad-grid-modal" id="modalSquadGrid">
+                            <!-- Squad Players -->
+                        </div>
+                        <div id="noSquadsMsg"
+                            style="text-align: center; padding: 20px; color: var(--text-muted); display: none;">
+                            Team rosters not available for this legacy match.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Stats Modal -->
+    <div class="modal-overlay" id="playerStatsModal" style="z-index: 10000;">
+        <div class="modal-content" style="max-width: 500px; padding: 0; overflow: hidden;">
+            <div class="modal-header" style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h3 id="statsPlayerName" style="margin:0; font-family: var(--font-head); text-transform: uppercase;">
+                    PLAYER NAME</h3>
+                <button class="close-modal" onclick="closePlayerStatsModal()"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <div class="d-flex gap-4 mb-4">
+                    <div style="flex-shrink:0;">
+                        <img id="statsPlayerImage" src="" alt="Player"
+                            style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-gold); padding: 2px; background: #fff;">
+                    </div>
+                    <div>
+                        <div id="statsPlayerRole" style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">ROLE
+                        </div>
+                        <div id="statsPlayerType"
+                            style="font-size: 0.9rem; color: var(--text-muted); background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 20px; display: inline-block;">
+                            TYPE</div>
+                    </div>
+                </div>
+
+                <div class="row g-2" id="statsGrid">
+                    <!-- Stats injected here -->
+                </div>
+
+                <div style="text-align: center; margin-top: 20px; color: var(--text-muted); font-size: 0.8rem;">
+                    * Career IPL Stats (Approx)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="player-database.js"></script>
+    <script src="stats.js"></script>
+    <script>
+        // Global variables
+        let currentUserEmail = null;
+        let currentModalData = null;
+
+        // Load user profile on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || !user.email) {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentUserEmail = user.email;
+            await loadProfile(user.email);
+
+            // Auto-open specific match if roomId is in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const rid = urlParams.get('roomId');
+            if (rid) {
+                setTimeout(() => openMatchDetails(rid), 500); // Small delay to ensure everything is ready
+            }
+        });
+
+
+        async function loadProfile(email) {
+            try {
+                const response = await fetch(`/api/auth/profile/${email}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    userProfileData = data; // Store data globally
+                    document.getElementById('loadingSection').style.display = 'none';
+                    document.getElementById('profileContent').style.display = 'block';
+                    displayProfile(data);
+                } else {
+                    throw new Error('Profile fetch failed');
+                }
+            } catch (error) {
+                console.warn('Error loading profile API, trying fallback:', error);
+
+                // Fallback: Use local storage
+                const savedUser = JSON.parse(localStorage.getItem('user'));
+                if (savedUser) {
+                    userProfileData = savedUser; // Store fallback data
+                    document.getElementById('loadingSection').style.display = 'none';
+                    document.getElementById('profileContent').style.display = 'block';
+                    displayProfile(savedUser);
+                } else {
+                    document.getElementById('loadingSection').innerHTML = '<div style="color:red">Error loading profile</div>';
+                }
+            }
+        }
+
+        function displayProfile(profile) {
+            // Toggle Back Button (if viewing someone else)
+            // Ensure currentUserEmail is set from localStorage if null
+            if (!currentUserEmail) {
+                const u = JSON.parse(localStorage.getItem('user'));
+                if (u) currentUserEmail = u.email;
+            }
+
+            const backBtn = document.getElementById('backToMyProfileBtn');
+            if (backBtn) {
+                if (currentUserEmail && profile.email && profile.email !== currentUserEmail) {
+                    backBtn.style.display = 'inline-flex';
+                    backBtn.style.alignItems = 'center';
+                    backBtn.style.gap = '5px';
+                } else {
+                    backBtn.style.display = 'none';
+                }
+            }
+
+            // User Info
+            document.getElementById('userName').textContent = (profile.name || "GUEST").toUpperCase();
+            document.getElementById('userEmail').textContent = profile.email || "No Email";
+
+            // Avatar
+            const avatarContainer = document.getElementById('userAvatar');
+            if (profile.avatar) {
+                avatarContainer.innerHTML = `<img src="${profile.avatar}" alt="Avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                avatarContainer.style.border = '2px solid var(--accent-gold)';
+            } else {
+                const name = profile.name || "Guest";
+                const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
+                avatarContainer.innerHTML = initials;
+            }
+
+            const joinDate = new Date(profile.createdAt || Date.now()).toLocaleDateString();
+            document.getElementById('userDetailsText').innerHTML = `Joined: ${joinDate} &nbsp;&bull;&nbsp; <span style="color: var(--accent-gold);">${profile.email}</span>`;
+
+            // Stats
+            const stats = profile.stats || {};
+            document.getElementById('matchesPlayed').textContent = stats.matchesPlayed || 0;
+            document.getElementById('matchesWon').textContent = stats.matchesWon || 0;
+            document.getElementById('auctionsCount').textContent = stats.auctionsParticipated || 0;
+            const winRate = stats.matchesPlayed > 0 ? Math.round((stats.matchesWon / stats.matchesPlayed) * 100) : 0;
+            document.getElementById('winRate').textContent = `${winRate}%`;
+
+            // Render Teams Showcase
+            renderTeamsShowcase();
+
+            // Enhanced Stats (Normal vs Blind)
+            renderModeStats(profile);
+
+            // History
+            displayHistory(profile.auctionHistory || []);
+
+            // âœ¨ One-time Migration check: Sync session to MongoDB if we have local data
+            if (typeof Auth !== 'undefined' && Auth.syncSessionToMongoDB) {
+                console.log("ðŸ”„ Ensuring local session is synced to MongoDB...");
+                Auth.syncSessionToMongoDB();
+            }
+        }
+
+        function renderModeStats(profile) {
+            const normal = profile.normalAuction || { matchesPlayed: 0, matchesWon: 0, winRate: 0 };
+            const blind = profile.blindAuction || { matchesPlayed: 0, matchesWon: 0, winRate: 0, exchangesMade: 0 };
+
+            // We can inject this into a new section or replace part of the grid
+            const container = document.getElementById('profileContent');
+
+            // Check if we already have the mode stats container
+            let modeStats = document.getElementById('modeStatsSection');
+            if (!modeStats) {
+                modeStats = document.createElement('div');
+                modeStats.id = 'modeStatsSection';
+                modeStats.className = 'mt-5';
+                // Insert after stats-grid
+                const statsGrid = document.querySelector('.stats-grid');
+                statsGrid.parentNode.insertBefore(modeStats, statsGrid.nextSibling);
+            }
+
+            modeStats.innerHTML = `
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div style="background: rgba(41, 121, 255, 0.05); border: 1px solid rgba(41, 121, 255, 0.2); border-radius: 12px; padding: 20px;">
+                            <h4 style="font-family: var(--font-head); color: var(--accent-blue); text-transform: uppercase;"><i class="bi bi-lightning-fill"></i> Normal Auction</h4>
+                            <div class="d-flex justify-content-between mt-3">
+                                <div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">PLAYED</div>
+                                    <div style="font-size: 1.5rem; font-family: var(--font-head);">${normal.matchesPlayed}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">WON</div>
+                                    <div style="font-size: 1.5rem; font-family: var(--font-head);">${normal.matchesWon}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">WIN RATE</div>
+                                    <div style="font-size: 1.5rem; font-family: var(--font-head); color: var(--accent-gold);">${normal.winRate}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 12px; padding: 20px;">
+                            <h4 style="font-family: var(--font-head); color: var(--accent-gold); text-transform: uppercase;"><i class="bi bi-incognito"></i> Blind Auction</h4>
+                            <div class="d-flex justify-content-between mt-3">
+                                <div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">PLAYED</div>
+                                    <div style="font-size: 1.5rem; font-family: var(--font-head);">${blind.matchesPlayed}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">WON</div>
+                                    <div style="font-size: 1.5rem; font-family: var(--font-head);">${blind.matchesWon}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">EXCHANGES</div>
+                                    <div style="font-size: 1.5rem; font-family: var(--font-head); color: var(--accent-blue);">${blind.exchangesMade || 0}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+             `;
+        }
+
+        function renderTeamsShowcase() {
+            const container = document.getElementById('globalTeamsContainer');
+            const teams = ["CSK", "MI", "RCB", "KKR", "SRH", "DC", "GT", "RR", "LSG", "PBKS"];
+
+            const teamColors = {
+                "CSK": "#FFFF00", "MI": "#004BA0", "RCB": "#EC1C24", "KKR": "#2E0854",
+                "SRH": "#FF822E", "DC": "#00008B", "GT": "#1B2133", "RR": "#EA1A85",
+                "LSG": "#0057E2", "PBKS": "#D71920"
+            };
+
+            container.innerHTML = teams.map(team => `
+                <div class="team-display-card">
+                    <div class="team-logo-placeholder" style="border-color: ${teamColors[team] || 'rgba(255,255,255,0.1)'}; color: ${teamColors[team] || '#fff'}">
+                        ${team[0]}${team[1] || ''}
+                    </div>
+                    <div class="team-display-name">${team}</div>
+                </div>
+            `).join('');
+        }
+
+        function displayHistory(history) {
+            const container = document.getElementById('historyContainer');
+
+            if (!history || history.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding: 60px; color: var(--text-muted); background: var(--glass-bg); border-radius: 20px; border: 1px dashed var(--glass-border);">No tournament history recorded yet.</div>';
+                return;
+            }
+
+            // Sort by recent
+            history.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            container.innerHTML = history.map(((auction, index) => {
+                const dateObj = new Date(auction.date);
+                const day = dateObj.getDate();
+                const month = dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+                const year = dateObj.getFullYear();
+
+                let resultText = "PARTICIPANT";
+                let resultClass = "";
+
+                if (auction.result === 'won') {
+                    resultText = "CHAMPION";
+                    resultClass = "winner";
+                } else if (auction.result === 'runner-up') {
+                    resultText = "FINALIST";
+                    resultClass = "runner-up";
+                }
+
+                return `
+                    <div class="history-card-new" id="history-card-${auction.roomId}" style="animation-delay: ${index * 0.1}s">
+                        <button class="btn-delete-history" onclick="deleteHistoryItem('${auction.roomId}')" title="Remove from History">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        <div class="history-info">
+                            <div class="match-date-box">
+                                <div class="date">${day} ${month}</div>
+                                <div class="room">${auction.roomId?.substring(0, 8) || 'N/A'}</div>
+                            </div>
+                            <div class="team-info-box">
+                                <div class="team-name-large">${auction.teamName} <span>OWNER</span></div>
+                                <div class="result-status ${resultClass}">${resultText}</div>
+                            </div>
+                        </div>
+                        <button class="btn-view-details" onclick="openMatchDetails('${auction.roomId}')">
+                            ANALYZE OPS
+                        </button>
+                    </div>
+                `;
+            })).join('');
+        }
+
+        async function deleteHistoryItem(roomId) {
+            if (!confirm('Are you sure you want to remove this tournament from your history? This cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/auth/clear-squad/${currentUserEmail}/${roomId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    // Remove from DOM
+                    const card = document.getElementById(`history-card-${roomId}`);
+                    if (card) {
+                        card.style.opacity = '0';
+                        setTimeout(() => card.remove(), 400);
+                    }
+
+                    // Update local data if needed
+                    if (userProfileData && userProfileData.auctionHistory) {
+                        userProfileData.auctionHistory = userProfileData.auctionHistory.filter(h => h.roomId !== roomId);
+                        // Update stats slightly if we wanted to be perfect, but a reload is easier for stats
+                    }
+                } else {
+                    alert("Failed to remove history item.");
+                }
+            } catch (e) {
+                console.error("Error deleting history:", e);
+                alert("Error removing item.");
+            }
+        }
+
+        async function openMatchDetails(roomId) {
+            const modal = document.getElementById('matchDetailsModal');
+            const loader = document.getElementById('modalLoading');
+            const content = document.getElementById('modalContentArea');
+
+            modal.style.display = 'flex';
+            loader.style.display = 'block';
+            content.style.display = 'none';
+
+            // Clear any previous warnings
+            const existingWarning = content.querySelector('.alert-warning');
+            if (existingWarning) existingWarning.remove();
+
+            try {
+                console.log(`ðŸ” Fetching details for room: ${roomId}`);
+                let res = await fetch(`/api/matches/${roomId}`);
+
+                // Retry with Uppercase if 404 (Case compatibility)
+                if (res.status === 404) {
+                    const upperId = roomId.toUpperCase();
+                    if (upperId !== roomId) {
+                        console.log(`ðŸ”„ Retrying with uppercase ID: ${upperId}`);
+                        res = await fetch(`/api/matches/${upperId}`);
+                    }
+                }
+
+                if (!res.ok) {
+                    if (res.status === 404) throw new Error("MATCH_NOT_FOUND");
+                    throw new Error("SERVER_ERROR");
+                }
+
+                const data = await res.json();
+                currentModalData = data;
+                renderMatchModal(data);
+
+                loader.style.display = 'none';
+                content.style.display = 'block';
+            } catch (e) {
+                console.warn('Match detail fetch failed:', e.message);
+
+                // FALLBACK: Try to find partial data in user history
+                let fallbackData = null;
+                if (userProfileData && userProfileData.auctionHistory) {
+                    const historyItem = userProfileData.auctionHistory.find(h => h.roomId === roomId);
+                    if (historyItem) {
+                        fallbackData = {
+                            standings: [],
+                            stats: { totalMatches: 0 },
+                            rosters: [{
+                                teamName: historyItem.teamName,
+                                players: historyItem.squad || []
+                            }],
+                            matches: [],
+                            players: [],
+                            isPartial: true
+                        };
+                    }
+                }
+
+                if (fallbackData) {
+                    currentModalData = fallbackData;
+                    renderMatchModal(fallbackData);
+                    loader.style.display = 'none';
+                    content.style.display = 'block';
+
+                    // Show warning based on error type
+                    const warning = document.createElement('div');
+                    warning.className = "alert alert-warning";
+                    warning.style.cssText = "margin-bottom: 20px; background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; color: #ffc107; padding: 15px; border-radius: 12px; font-size: 0.95rem;";
+
+                    if (e.message === "MATCH_NOT_FOUND") {
+                        warning.innerHTML = `
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.2rem;"></i>
+                                <div>
+                                    <strong>MATCH ARCHIVE NOT FOUND</strong><br>
+                                    This tournament's detailed logs are missing from the database. 
+                                    <span style="opacity: 0.8;">(Only your squad and result were recovered from your local profile).</span>
+                                </div>
+                            </div>`;
+                    } else {
+                        warning.innerHTML = `
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-cloud-slash-fill" style="font-size: 1.2rem;"></i>
+                                <div>
+                                    <strong>CONNECTION ISSUE</strong><br>
+                                    Could not reach the server to fetch match details. Showing offline mirror.
+                                </div>
+                            </div>`;
+                    }
+                    content.insertBefore(warning, content.firstChild);
+                } else {
+                    loader.innerHTML = `<div style="text-align: center; padding: 40px; color: #FF5252;">
+                        <i class="bi bi-x-circle-fill" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+                        <h4 style="font-family: var(--font-head); text-transform: uppercase;">Details Unavailable</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">The records for room <strong>${roomId}</strong> could not be found or have expired.</p>
+                        <button onclick="closeMatchModal()" class="btn-custom mt-3" style="color: #fff">BACK TO PROFILE</button>
+                    </div>`;
+                }
+            }
+        }
+
+        function closeMatchModal() {
+            document.getElementById('matchDetailsModal').style.display = 'none';
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            // Find specific button based on onclick attribute or text
+            const buttons = Array.from(document.querySelectorAll('.tab-btn'));
+            const button = buttons.find(b => b.getAttribute('onclick').includes(tabName));
+
+            if (button) button.classList.add('active');
+
+            const tab = document.getElementById(`tab-${tabName}`);
+            if (tab) tab.classList.add('active');
+        }
+
+        function renderMatchModal(data) {
+            // Render Standings
+            const tbody = document.getElementById('standingsTableBody');
+
+            if (data.standings && data.standings.length > 0) {
+                document.getElementById('noStandingsMsg').style.display = 'none';
+                document.querySelector('.standings-table').style.display = 'table';
+
+                tbody.innerHTML = data.standings.map(team => {
+                    // Try to identify if this is the user
+                    const isUser = team.teamName === (data.players.find(p => p.playerEmail === currentUserEmail)?.teamName);
+
+                    return `
+                        <tr class="${isUser ? 'user-team' : ''}">
+                            <td class="rank-cell">#${team.position}</td>
+                            <td class="team-name-cell">
+                                ${team.teamName}
+                                ${isUser ? '<span class="team-badge">YOU</span>' : ''}
+                            </td>
+                            <td>${team.played}</td>
+                            <td>${team.won}</td>
+                            <td>${team.lost}</td>
+                            <td style="color: var(--accent-gold); font-weight: bold;">${team.points}</td>
+                            <td>${team.nrr}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                document.querySelector('.standings-table').style.display = 'none';
+                document.getElementById('noStandingsMsg').style.display = 'block';
+            }
+
+            // Render Matches
+            renderMatches(data);
+
+            // Render Stats
+            if (data.stats) {
+                renderStats(data.stats);
+            } else {
+                document.getElementById('statsContent').innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted)">No statistics available</div>';
+            }
+
+            // Render Squads logic
+            const rosters = data.rosters || [];
+            if (rosters.length > 0) {
+                document.getElementById('noSquadsMsg').style.display = 'none';
+                renderSquadSelector(rosters);
+            } else {
+                document.getElementById('teamSelector').innerHTML = '';
+                document.getElementById('modalSquadGrid').innerHTML = '';
+                document.getElementById('noSquadsMsg').style.display = 'block';
+            }
+        }
+
+        function renderMatches(data) {
+            const container = document.getElementById('matchesList');
+            if (!container) return;
+
+            // Try to find matches in various places (Win schema is limited, need to update Backend to save matches!)
+            // For now, checks if data.matches exists (future proofing)
+            const matches = data.matches || data.leagueMatches || [];
+            const playoffs = data.playoffs || [];
+
+            if (matches.length === 0 && playoffs.length === 0) {
+                // If we have totalMatches > 0 but no details, show summary
+                if (data.stats && data.stats.totalMatches > 0) {
+                    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">
+                        <i class="bi bi-info-circle" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                        Detailed match logs are not available for this tournament.<br>
+                        Total Matches Played: ${data.stats.totalMatches}
+                     </div>`;
+                } else {
+                    container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">No match records found.</div>';
+                }
+                return;
+            }
+
+            let html = '';
+
+            const renderCard = (m, label) => {
+                return `
+                <div class="match-card">
+                    <div class="match-header ${label.includes('Final') ? 'final-match' : ''}">${label}</div>
+                    <div class="match-body">
+                        <div class="match-team">
+                            <span class="m-team">${m.t1 || m.team1 || 'Team A'}</span>
+                            <span class="m-score">${m.score1 || '-'}</span>
+                        </div>
+                        <div class="match-divider">VS</div>
+                        <div class="match-team">
+                            <span class="m-team">${m.t2 || m.team2 || 'Team B'}</span>
+                            <span class="m-score">${m.score2 || '-'}</span>
+                        </div>
+                    </div>
+                    <div class="match-result" style="border-top: 1px solid rgba(255,255,255,0.05)">
+                        Winner: <span style="color: var(--accent-gold)">${m.winner || m.winnerName}</span> 
+                        <span style="opacity: 0.7">â€¢ ${m.margin || ''}</span>
+                    </div>
+                </div>`;
+            };
+
+            if (playoffs.length > 0) {
+                html += `<h3 style="color: var(--accent-gold); margin: 10px 0 15px; font-size: 1.2rem; text-transform: uppercase;">Playoffs</h3>
+                         <div class="matches-grid">
+                            ${playoffs.map(m => renderCard(m, m.type || 'Playoff')).join('')}
+                         </div>`;
+            }
+
+            if (matches.length > 0) {
+                html += `<h3 style="color: var(--text-muted); margin: 20px 0 15px; font-size: 1.2rem; text-transform: uppercase;">League Stage</h3>
+                         <div class="matches-grid">
+                            ${matches.map((m, i) => renderCard(m, `Match ${i + 1}`)).join('')}
+                         </div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderStats(stats) {
+            const container = document.getElementById('statsContent');
+            if (!container) return;
+
+            if (!stats || (!stats.orangeCap && !stats.purpleCap && !stats.mvp)) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted)">No specialized stats recorded.</div>';
+                return;
+            }
+
+            const createCard = (title, data, value, label, color) => {
+                if (!data) return '';
+                return `
+                <div class="stat-highlight-card" style="border-left: 4px solid ${color}">
+                    <div class="stat-title">${title} <span style="float:right; opacity:0.5; font-size: 0.7em">${data.team || ''}</span></div>
+                    <div class="stat-player-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${data.playerName || data.name || 'N/A'}</div>
+                    <div class="stat-value-large" style="color: ${color}">${value}</div>
+                    <div class="stat-desc">${label}</div>
+                </div>`;
+            };
+
+            let html = '';
+            if (stats.orangeCap) html += createCard('ORANGE CAP', stats.orangeCap, stats.orangeCap.runs, 'RUNS', '#FF9800');
+            if (stats.purpleCap) html += createCard('PURPLE CAP', stats.purpleCap, stats.purpleCap.wickets, 'WICKETS', '#9C27B0');
+            if (stats.mvp) html += createCard('TOURNAMENT MVP', stats.mvp, stats.mvp.points, 'POINTS', '#FFD700');
+            if (stats.mostSixes) html += createCard('MOST SIXES', stats.mostSixes, stats.mostSixes.val || 0, 'SIXES', '#E91E63');
+            if (stats.highestSr) html += createCard('HIGHEST S.R.', stats.highestSr, stats.highestSr.val || 0, 'S/R', '#00BCD4');
+
+            container.innerHTML = html;
+        }
+
+        function renderSquadSelector(rosters) {
+            const selector = document.getElementById('teamSelector');
+
+            // Generate pills
+            selector.innerHTML = rosters.map((team, idx) => {
+                return `<div class="team-pill ${idx === 0 ? 'active' : ''}" onclick="selectSquad(${idx})">${team.teamName}</div>`;
+            }).join('');
+
+            // Select first by default
+            selectSquad(0);
+        }
+
+        function selectSquad(index) {
+            if (!currentModalData || !currentModalData.rosters) return;
+
+            // Update pills
+            document.querySelectorAll('.team-pill').forEach((pill, idx) => {
+                if (idx === index) pill.classList.add('active');
+                else pill.classList.remove('active');
+            });
+
+            const team = currentModalData.rosters[index];
+            const grid = document.getElementById('modalSquadGrid');
+
+            if (!team.players || team.players.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No players in this roster.</div>';
+                return;
+            }
+
+            grid.innerHTML = team.players.map(p => {
+                return `
+                    <div class="player-card-modal interactive-card" onclick="openPlayerStats('${p.name.replace(/'/g, "\\'")}')">
+                        <span class="player-role-badge">${p.role || 'Player'}</span>
+                        <div style="font-weight: 700; color: #fff; font-size: 1.1rem;">${p.name}</div>
+                        <div style="color: var(--accent-gold); font-family: var(--font-head); font-size: 1.2rem;">â‚¹${(p.price || 0).toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- PLAYER STATS MODAL LOGIC ---
+        function openPlayerStats(playerName) {
+            // 1. Get Stats
+            let stats = {};
+            if (typeof getPlayerCareerStats === 'function') {
+                stats = getPlayerCareerStats(playerName);
+            } else {
+                stats = { matches: 0, runs: 0, wickets: 0, hs: 0, best: '-' };
+            }
+
+            // 2. Get DB Info
+            const db = (window.PLAYER_DATABASE && window.PLAYER_DATABASE[playerName]) || {};
+            let imgMap = null;
+            if (window.PLAYER_IMAGE_MAP) {
+                if (window.PLAYER_IMAGE_MAP[playerName]) {
+                    imgMap = window.PLAYER_IMAGE_MAP[playerName];
+                } else if (window.PLAYER_IMAGE_MAP[playerName.toLowerCase()]) {
+                    imgMap = window.PLAYER_IMAGE_MAP[playerName.toLowerCase()];
+                }
+            }
+
+            // 3. Populate Modal
+            document.getElementById('statsPlayerName').innerText = playerName;
+            document.getElementById('statsPlayerRole').innerText = (db.role || 'Cricketer').toUpperCase();
+
+            const isOverseas = (db.type === 'Foreign');
+            const typeEl = document.getElementById('statsPlayerType');
+            typeEl.innerHTML = isOverseas ? 'âœˆï¸ OVERSEAS' : 'ðŸ‡®ðŸ‡³ INDIAN';
+            typeEl.style.background = isOverseas ? 'rgba(255, 82, 82, 0.2)' : 'rgba(76, 175, 80, 0.2)';
+            typeEl.style.color = isOverseas ? '#ff5252' : '#8bc34a';
+
+            // Image
+            const imgEl = document.getElementById('statsPlayerImage');
+            if (imgMap) {
+                imgEl.src = imgMap;
+            } else {
+                imgEl.src = `https://ui-avatars.com/api/?name=${playerName}&background=random&size=200`;
+            }
+
+            // Grid
+            const grid = document.getElementById('statsGrid');
+            const createItem = (label, value, color = 'white') => `
+                <div class="col-4">
+                    <div class="p-2 rounded" style="background: rgba(255,255,255,0.05); text-align: center;">
+                        <div class="text-white-50 small text-uppercase" style="font-size:0.7rem; letter-spacing:1px; margin-bottom:4px;">${label}</div>
+                        <div class="fw-bold fs-4 display-font" style="color: var(--bs-${color}); font-family: var(--font-head);">${value}</div>
+                    </div>
+                </div>
+            `;
+
+            let html = '';
+            html += createItem('MATCHES', stats.matches || 0);
+            html += createItem('RUNS', stats.runs || 0, 'warning');
+            html += createItem('WICKETS', stats.wickets || 0, 'info');
+            html += createItem('HIGH SCORE', stats.hs || 0);
+            html += createItem('BEST BOWL', stats.best || '-');
+
+            // Skills from DB
+            if (db.bat) html += createItem('BAT SKILL', db.bat, 'warning');
+            if (db.bowl) html += createItem('BOWL SKILL', db.bowl, 'info');
+
+            grid.innerHTML = html;
+
+            // Show
+            const modal = document.getElementById('playerStatsModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('active'); // fade in if CSS supports
+            }, 10);
+        }
+
+        function closePlayerStatsModal() {
+            const modal = document.getElementById('playerStatsModal');
+            modal.style.display = 'none';
+        }
+
+        function logout() {
+            localStorage.removeItem('user'); // Basic logout
+            if (window.Auth && window.Auth.logout) {
+                window.Auth.logout();
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+
+        /* --- SEARCH LOGIC --- */
+        async function searchUsers() {
+            const query = document.getElementById('userSearchInput').value;
+            if (!query || query.length < 2) return;
+
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.innerHTML = '<div class="p-3 text-center text-muted">Searching...</div>';
+            resultsDiv.style.display = 'block';
+
+            try {
+                const res = await fetch(`/api/auth/search?query=${encodeURIComponent(query)}`);
+                const users = await res.json();
+
+                if (users.length === 0) {
+                    resultsDiv.innerHTML = '<div class="p-3 text-center text-muted">No users found</div>';
+                    // Hide after 2 seconds
+                    setTimeout(() => resultsDiv.style.display = 'none', 2000);
+                    return;
+                }
+
+                resultsDiv.innerHTML = users.map(u => `
+                    <div class="p-2 border-bottom border-secondary d-flex align-items-center gap-3 start-search-item" 
+                         style="cursor: pointer; transition: background 0.2s;" 
+                         onclick="loadProfile('${u.email}'); document.getElementById('searchResults').style.display='none'; document.getElementById('userSearchInput').value = '';">
+                        <div style="width: 32px; height: 32px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid rgba(255,255,255,0.2);">
+                            ${u.avatar ? `<img src="${u.avatar}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="font-size:0.8rem; font-weight:bold; color:#aaa;">${u.name ? u.name.charAt(0).toUpperCase() : '?'}</span>`}
+                        </div>
+                        <div>
+                            <div class="text-white fw-bold" style="font-size: 0.9rem;">${u.name || 'Unknown'}</div>
+                            <div class="text-muted small" style="font-size: 0.75rem;">${u.email}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Add hover effect
+                document.querySelectorAll('.start-search-item').forEach(el => {
+                    el.addEventListener('mouseenter', () => el.style.background = 'rgba(255,255,255,0.1)');
+                    el.addEventListener('mouseleave', () => el.style.background = 'transparent');
+                });
+
+            } catch (e) {
+                console.error(e);
+                resultsDiv.innerHTML = '<div class="p-3 text-center text-danger">Error searching</div>';
+            }
+        }
+
+        function handleSearchKey(e) {
+            if (e.key === 'Enter') searchUsers();
+
+            // Hide results if empty
+            if (e.target.value.length === 0) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+        }
+
+        function loadMyProfile() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (user && user.email) {
+                loadProfile(user.email);
+                document.getElementById('userSearchInput').value = '';
+            }
+        }
+
+        // Close search results when clicking outside
+        document.addEventListener('click', function (event) {
+            const searchContainer = document.querySelector('.search-container');
+            const resultsDiv = document.getElementById('searchResults');
+            if (searchContainer && !searchContainer.contains(event.target)) {
+                resultsDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>
